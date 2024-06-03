@@ -1,0 +1,20 @@
+object DmProduto: TDmProduto
+  Height = 750
+  Width = 1000
+  PixelsPerInch = 120
+  object FDQ_ConsDados: TFDQuery
+    Connection = DmConexao.FDConnection1
+    SQL.Strings = (
+      'select *'
+      'from produtos'
+      'where codigo = :codigo')
+    Left = 264
+    Top = 176
+    ParamData = <
+      item
+        Name = 'CODIGO'
+        DataType = ftInteger
+        ParamType = ptInput
+      end>
+  end
+end

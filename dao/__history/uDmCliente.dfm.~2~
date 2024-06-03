@@ -1,0 +1,9 @@
+object DataModule1: TDataModule1
+  Height = 388
+  Width = 523
+  PixelsPerInch = 120
+  object FDQ_ConsDados: TFDQuery
+    Left = 264
+    Top = 160
+  end
+end

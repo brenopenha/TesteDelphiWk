@@ -1,0 +1,410 @@
+unit ufrm_pedvenda;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
+  FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MySQL,
+  FireDAC.Phys.MySQLDef, FireDAC.VCLUI.Wait, FireDAC.Comp.UI, Data.DB,
+  FireDAC.Comp.Client, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.Mask, uDmConexao, uProdutoController ,
+  uProdutoModel, uClienteModel, uClienteController, uPedidoController, uPedidoModel, uPedidoItemController,
+  uPedidoItemModel, system.MaskUtils;
+
+type
+  Tfrm_pedVenda = class(TForm)
+    Panel_rodape: TPanel;
+    Panel_grid_prod: TPanel;
+    Panel_ins_prod: TPanel;
+    btn_sair: TButton;
+    sg_produtos: TStringGrid;
+    GroupBox_inc_prod: TGroupBox;
+    edit_cod_produto: TLabeledEdit;
+    edit_qtde: TLabeledEdit;
+    edit_vl_unitario: TLabeledEdit;
+    b_inserir_prod: TButton;
+    edit_DescProduto: TLabeledEdit;
+    Panel_Cliente: TPanel;
+    GroupBox1: TGroupBox;
+    edit_cod_cli: TLabeledEdit;
+    edit_nome_cli: TLabeledEdit;
+    edit_cidade_cli: TLabeledEdit;
+    edit_uf_cli: TLabeledEdit;
+    b_GravarPedido: TButton;
+    eTotalPedido: TEdit;
+    Y: TLabel;
+    Label1: TLabel;
+    MaskEdit1: TMaskEdit;
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+    procedure btn_sairClick(Sender: TObject);
+    procedure b_inserir_prodClick(Sender: TObject);
+    procedure edit_cod_produtoExit(Sender: TObject);
+    procedure edit_cod_produtoKeyPress(Sender: TObject; var Key: Char);
+    procedure sg_produtosDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure sg_produtosKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure sg_produtosKeyPress(Sender: TObject; var Key: Char);
+    procedure edit_cod_cliExit(Sender: TObject);
+    procedure b_GravarPedidoClick(Sender: TObject);
+  private
+    { Private declarations }
+    vl_total_ped : double;
+    procedure Monta_cab_grid;
+    procedure Inserir_produto_grid;
+    procedure Excluir_produto_grid;
+    procedure Limpar_campos_Incl_produto;
+    procedure Carrega_prod_alteracao;
+    procedure Altera_produto_grid;
+    procedure Limpa_Campos_Cliente;
+    procedure Limpa_Grid_Itens;
+    function Dados_produto_preenchidos : boolean;
+    procedure Atualiza_Vl_Total_ped(Valor : double);
+    procedure Gravar_Pedido;
+  public
+    { Public declarations }
+  end;
+
+  Toperacao = (opInserir, opAlterar);
+
+var
+  frm_pedVenda: Tfrm_pedVenda;
+  Operacao     : Toperacao;
+
+implementation
+
+{$R *.dfm}
+
+procedure Tfrm_pedVenda.Altera_produto_grid;
+  var nro_linha : integer;
+      vl_total_old, vl_total_new : string;
+begin
+   if Dados_produto_preenchidos then
+   begin
+     nro_linha := sg_produtos.Row;
+     vl_total_old := sg_produtos.Cells[4,nro_linha];
+     //
+     sg_produtos.Cells[0,nro_linha] := edit_cod_produto.Text;
+     sg_produtos.Cells[1,nro_linha] := edit_DescProduto.Text;
+     sg_produtos.Cells[2,nro_linha] := edit_qtde.Text;
+     sg_produtos.Cells[3,nro_linha] := edit_vl_unitario.Text;
+     vl_total_new                   := floattostr(strtofloat(edit_vl_unitario.Text)*strtoint(edit_qtde.Text));
+     sg_produtos.Cells[4,nro_linha] := vl_total_new;
+     Operacao := opInserir;
+     edit_cod_produto.Enabled := true;
+     sg_produtos.Enabled      := true;
+     Atualiza_Vl_Total_ped(strtofloat(vl_total_new) - strtofloat(vl_total_old));
+     Limpar_campos_Incl_produto;
+     edit_cod_produto.SetFocus;
+   end;
+end;
+
+procedure Tfrm_pedVenda.Atualiza_Vl_Total_ped(Valor : double);
+begin
+  vl_total_ped := vl_total_ped + Valor;
+  eTotalPedido.Text := floattostr(vl_total_ped);
+end;
+
+procedure Tfrm_pedVenda.btn_sairClick(Sender: TObject);
+begin
+  frm_pedVenda.Close;
+end;
+
+procedure Tfrm_pedVenda.b_GravarPedidoClick(Sender: TObject);
+begin
+  Gravar_Pedido;
+end;
+
+procedure Tfrm_pedVenda.b_inserir_prodClick(Sender: TObject);
+begin
+  if Operacao = opInserir then
+    Inserir_produto_grid
+  else Altera_produto_grid;
+end;
+
+procedure Tfrm_pedVenda.Carrega_prod_alteracao;
+begin
+  Operacao := opAlterar;
+  edit_cod_produto.Text := sg_produtos.Cells[0, sg_produtos.Row];
+  edit_DescProduto.Text := sg_produtos.Cells[1, sg_produtos.Row];
+  edit_qtde.Text        := sg_produtos.Cells[2, sg_produtos.Row];
+  edit_vl_unitario.Text := sg_produtos.Cells[3, sg_produtos.Row];
+  edit_cod_produto.Enabled := false;
+  sg_produtos.Enabled      := false;
+end;
+
+function Tfrm_pedVenda.Dados_produto_preenchidos: boolean;
+begin
+  if edit_DescProduto.Text = '' then
+  begin
+    MessageDlg('Código do produto não informado. Favor verifiar!', mtInformation, [mbok],0 );
+    edit_cod_produto.SetFocus;
+    Result:= false;
+  end
+  else
+    begin
+      if edit_qtde.Text = '' then
+      begin
+        MessageDlg('Quantidade do produto não informada. Favor verifiar!', mtInformation, [mbok],0 );
+        edit_qtde.SetFocus;
+        Result:= false;
+      end
+      else
+      begin
+        if edit_vl_unitario.Text = '' then
+        begin
+          MessageDlg('Valor unitário do produto não informado. Favor verifiar!', mtInformation, [mbok],0 );
+          edit_vl_unitario.SetFocus;
+          Result:= false;
+        end
+        else Result := true;
+      end;
+    end;
+end;
+
+procedure Tfrm_pedVenda.edit_cod_cliExit(Sender: TObject);
+var
+  oCliente           : TCliente;
+  oClienteController : TClienteController;
+begin
+  if edit_cod_cli.Text <> '' then
+  begin
+    oCliente           := TCliente.Create;
+    oClienteController := TClienteController.Create;
+
+    oClienteController.Consultar(strtoint(edit_cod_cli.Text), oCliente );
+    if oCliente.Codigo <> - 1 then
+    begin
+      edit_nome_cli.Text   := oCliente.Nome;
+      edit_cidade_cli.Text := oCliente.Cidade;
+      edit_uf_cli.Text     := oCliente.UF;
+    end
+    else
+      begin
+        MessageDlg('Cliente não encontrado!', mtInformation, [mbok],0 );
+        Limpa_Campos_Cliente;
+        edit_cod_cli.SetFocus;
+      end;
+    //
+    FreeAndNil(oCliente);
+    FreeAndNil(oClienteController);
+  end;
+end;
+
+procedure Tfrm_pedVenda.edit_cod_produtoExit(Sender: TObject);
+var
+  oProduto           : TProduto;
+  oProdutoController : TProdutoController;
+begin
+  if edit_cod_produto.Text <> '' then
+  begin
+    oProduto:= TProduto.Create;
+    oProdutoController := TProdutoController.Create;
+
+    oProdutoController.Consultar(strtoint(edit_cod_produto.Text), oProduto );
+    if oProduto.Codigo <> - 1 then
+      edit_descProduto.Text := oProduto.Descricao
+    else
+     begin
+       MessageDlg('Produto não encontrado!', mtInformation, [mbok],0 );
+       edit_DescProduto.Clear;
+       edit_cod_produto.SetFocus;
+     end;
+    //
+    FreeAndNil(oProduto);
+    FreeAndNil(oProdutoController);
+  end;
+end;
+
+procedure Tfrm_pedVenda.edit_cod_produtoKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if (not (Key in ['0'..'9'])) and (key <> #8) then
+    key := #0;
+end;
+
+procedure Tfrm_pedVenda.Excluir_produto_grid;
+var i              : integer;
+    Valor_excluido : string;
+begin
+  valor_excluido := sg_produtos.Cells[4,sg_produtos.Row];
+  if Sg_produtos.Row < (Sg_produtos.RowCount - 1) then
+  begin
+    for I := Sg_produtos.Row to (Sg_produtos.RowCount - 1) do
+    begin
+     sg_produtos.Cells[0,i] := sg_produtos.Cells[0,i+1];
+     sg_produtos.Cells[1,i] := sg_produtos.Cells[1,i+1];
+     sg_produtos.Cells[2,i] := sg_produtos.Cells[2,i+1];
+     sg_produtos.Cells[3,i] := sg_produtos.Cells[3,i+1];
+     sg_produtos.Cells[4,i] := sg_produtos.Cells[4,i+1];
+    end;
+  end;
+  Sg_produtos.RowCount := Sg_produtos.RowCount - 1;
+  Atualiza_Vl_Total_ped(-(strtofloat(valor_excluido)))
+end;
+
+procedure Tfrm_pedVenda.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+ (* if key = #13  then
+  begin
+     key := #0;
+     Perform(WM_NEXTDLGCTL,0,0);
+  end;*)
+end;
+
+procedure Tfrm_pedVenda.Monta_cab_grid;
+begin
+  frm_pedVenda.sg_produtos.Cells[0,0] := 'Cod. Produto';
+  frm_pedVenda.sg_produtos.Cells[1,0] := 'Desc. Produto';
+  frm_pedVenda.sg_produtos.Cells[2,0] := 'Qtde';
+  frm_pedVenda.sg_produtos.Cells[3,0] := 'Vl. Unitário';
+  frm_pedVenda.sg_produtos.Cells[4,0] := 'Vl. Total';
+end;
+
+procedure Tfrm_pedVenda.sg_produtosDrawCell(Sender: TObject; ACol,
+  ARow: Integer; Rect: TRect; State: TGridDrawState);
+  var conteudo : string;
+begin
+end;
+
+procedure Tfrm_pedVenda.sg_produtosKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if key = 46 then
+    if MessageDlg('Confirma a exclusao do produto?', mtConfirmation, [mbYes, mbNo],0 ) = idyes then
+      Excluir_produto_grid;
+end;
+
+procedure Tfrm_pedVenda.sg_produtosKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then
+    Carrega_prod_alteracao;
+end;
+
+procedure Tfrm_pedVenda.Inserir_produto_grid;
+var nro_linha : integer;
+begin
+  if Dados_produto_preenchidos then
+  begin
+    if (sg_produtos.Cells[0, sg_produtos.RowCount-1] <> '') then
+      sg_produtos.RowCount := sg_produtos.RowCount + 1;
+    //
+    nro_linha := sg_produtos.RowCount-1;
+    sg_produtos.Cells[0,nro_linha] := edit_cod_produto.Text;
+    sg_produtos.Cells[1,nro_linha] := edit_DescProduto.Text;
+    sg_produtos.Cells[2,nro_linha] := edit_qtde.Text;
+    sg_produtos.Cells[3,nro_linha] := FormatFloat('#,##0.00', StrToFloat(Edit_vl_unitario.Text));
+    sg_produtos.Cells[4,nro_linha] := FormatFloat('#,##0.00', strtofloat(edit_vl_unitario.Text)*strtoint(edit_qtde.Text));
+    Limpar_campos_Incl_produto;
+    Atualiza_Vl_Total_ped( strtofloat(sg_produtos.Cells[4,nro_linha]));
+    edit_cod_produto.SetFocus;
+  end;
+end;
+
+procedure Tfrm_pedVenda.Limpar_campos_Incl_produto;
+begin
+  edit_cod_produto.Clear;
+  edit_DescProduto.Clear;
+  edit_qtde.Clear;
+  edit_vl_unitario.Clear;
+end;
+
+procedure Tfrm_pedVenda.Limpa_Campos_Cliente;
+begin
+  edit_cod_cli.Clear;
+  edit_nome_cli.Clear;
+  edit_cidade_cli.Clear;
+  edit_uf_cli.Clear;
+end;
+
+procedure Tfrm_pedVenda.Limpa_Grid_Itens;
+begin
+  sg_produtos.RowCount := 2;
+  frm_pedVenda.sg_produtos.Cells[0,1] := '';
+  frm_pedVenda.sg_produtos.Cells[1,1] := '';
+  frm_pedVenda.sg_produtos.Cells[2,1] := '';
+  frm_pedVenda.sg_produtos.Cells[3,1] := '';
+  frm_pedVenda.sg_produtos.Cells[4,1] := '';
+  // Zera o total do pedido
+  vl_total_ped := 0;
+  eTotalPedido.Clear;
+end;
+
+procedure Tfrm_pedVenda.FormShow(Sender: TObject);
+begin
+  Monta_cab_grid;
+  Operacao := opInserir;
+  vl_total_ped := 0;
+  if not DmConexao.FDConnection1.Connected then
+    DmConexao.FDConnection1.Open;
+end;
+
+
+procedure Tfrm_pedVenda.Gravar_Pedido;
+var
+  oPedido               : TPedido;
+  oPedidoItem           : TPedidoItem;
+  oPedidoController     : TPedidoController;
+  oPedidoItemController : TPedidoItemController;
+  sErro                 : string;
+  I                     : integer;
+begin
+  oPedido           := TPedido.Create;
+  oPedidoController := TPedidoController.Create;
+  //
+  oPedidoController.ProxNroPedido(oPedido);
+  oPedido.CodCliente := strtoint(edit_cod_cli.Text);
+  oPedido.DtEmissao  := now();
+  oPedido.VlTotal    := strtofloat(eTotalPedido.Text);
+  // Grava o Pedido Geral
+  DmConexao.FDConnection1.StartTransaction;
+  oPedidoController.GravarPedido(oPedido, sErro);
+  if sErro <> '' then
+  begin
+    DmConexao.FDConnection1.Rollback;
+    MessageDlg('Erro ao gravar o Pedido de venda. ' + sErro, mtInformation, [mbok],0 );
+  end
+  else
+   begin
+      // Bloco de gravao do Item do Pedido
+      oPedidoItem           := TPedidoItem.Create;
+      oPedidoItemController := TPedidoItemController.Create;
+      // Carrega as informacaoes dos itens do pedido
+      for I := 1 to (Sg_produtos.RowCount - 1) do
+      begin
+         if sErro = '' then
+         begin
+           oPedidoItem.NroPedido  := oPedido.NroPedido;
+           oPedidoItem.CodProduto := strtoint(sg_produtos.Cells[0,i]);
+           oPedidoItem.Quantidade := strtoint(sg_produtos.Cells[2,i]);
+           oPedidoItem.VlUnitario := strtofloat(sg_produtos.Cells[3,i]);
+           oPedidoItem.VlTotal    := strtofloat(sg_produtos.Cells[4,i]);
+           //
+           oPedidoItemController.GravarItemPedido(oPedidoItem, sErro);
+           if sErro <> '' then
+           begin
+             DmConexao.FDConnection1.Rollback;
+             MessageDlg('Erro ao gravar o Item do Pedido de venda. ' + sErro, mtInformation, [mbok],0 );
+           end;
+         end;
+      end;
+      if sErro = '' then
+      begin
+        DmConexao.FDConnection1.Commit;
+        MessageDlg('Pedido Gravado com sucesso!', mtInformation, [mbok],0 );
+        Limpa_Campos_Cliente;
+        Limpar_campos_Incl_produto;
+        Limpa_Grid_Itens;
+        edit_cod_cli.SetFocus;
+      end;
+   end;
+   //
+   FreeAndNil(oPedido);
+   FreeAndNil(oPedidoController);
+   FreeAndNil(oPedidoItem);
+   FreeAndNil(oPedidoItemController);
+end;
+
+end.

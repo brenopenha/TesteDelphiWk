@@ -1,0 +1,29 @@
+unit uProdutoController;
+
+interface
+
+uses uProdutoModel, uDmProduto ;
+
+type
+  TProdutoController = class
+  private
+    { private declarations }
+  protected
+    { protected declarations }
+  public
+    { public declarations }
+    function Consultar(iCodigo : integer; oProduto :TProduto ) : boolean;
+  end;
+
+
+implementation
+
+{ TProdutoController }
+
+function TProdutoController.Consultar(iCodigo: integer;
+  oProduto: TProduto): boolean;
+begin
+   DmProduto.ConsultarProduto(iCodigo, oProduto);
+end;
+
+end.

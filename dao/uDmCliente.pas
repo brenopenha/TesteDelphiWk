@@ -1,0 +1,53 @@
+unit uDmCliente;
+
+interface
+
+uses
+  System.SysUtils, System.Classes, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB,
+  FireDAC.Comp.DataSet, FireDAC.Comp.Client, uClienteModel, uDmConexao;
+
+type
+  TDmCliente = class(TDataModule)
+    FDQ_ConsDados: TFDQuery;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure ConsultarCliente(iCodigo : integer; oCliente : Tcliente);
+  end;
+
+var
+  DmCliente: TDmCliente;
+
+implementation
+
+{%CLASSGROUP 'Vcl.Controls.TControl'}
+
+{$R *.dfm}
+
+{ TDataModule1 }
+
+procedure TDmCliente.ConsultarCliente(iCodigo: integer; oCliente: Tcliente);
+begin
+   FDQ_ConsDados.Close;
+   FDQ_ConsDados.Params[0].AsInteger := iCodigo;
+   FDQ_ConsDados.Open;
+   if FDQ_ConsDados.RecordCount = 0 then
+     oCliente.Codigo := -1
+   else
+    begin
+     //
+     with oCliente do
+     begin
+       Codigo   :=  FDQ_ConsDados.FieldByName('codigo').AsInteger;
+       Nome     :=  FDQ_ConsDados.FieldByName('nome').AsString;
+       Cidade   :=  FDQ_ConsDados.FieldByName('cidade').AsString;
+       UF       :=  FDQ_ConsDados.FieldByName('UF').AsString;
+     end;
+    end;
+   FDQ_ConsDados.close;
+end;
+
+end.

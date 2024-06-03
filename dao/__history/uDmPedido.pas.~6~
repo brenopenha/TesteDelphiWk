@@ -1,0 +1,50 @@
+unit uDmPedido;
+
+interface
+
+uses
+  System.SysUtils, System.Classes, uDmConexao, FireDAC.Stan.Intf,
+  FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS,
+  FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt,
+  Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, uPedidoModel;
+
+type
+  TDmPedido = class(TDataModule)
+    FDQ_Incluir: TFDQuery;
+    FDQ_ProxNroPed: TFDQuery;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    procedure GravarPedido(oPedido : Tpedido; out sErro : string);
+    procedure ProxNroPedido(oPedido : Tpedido);
+  end;
+
+var
+  DmPedido: TDmPedido;
+
+implementation
+
+{%CLASSGROUP 'Vcl.Controls.TControl'}
+
+{$R *.dfm}
+
+{ TDmPedido }
+
+procedure TDmPedido.GravarPedido(oPedido: Tpedido; out sErro: string);
+begin
+   FDQ_Incluir.Close;
+   FDQ_Incluir.Params[0].AsInteger  := oPedido.NroPedido;
+   FDQ_Incluir.Params[1].AsDateTime := oPedido.DtEmissao;
+   FDQ_Incluir.Params[2].AsInteger  := oPedido.CodCliente;
+   FDQ_Incluir.Params[3].AsFloat    := oPedido.VlTotal;
+   try
+     FDQ_Incluir.ExecSQL;
+   except on E: Exception do
+     begin
+       sErro := 'Erro ao gravar o Pedido. ' + E.Message;
+     end;
+   end;
+end;
+
+end.

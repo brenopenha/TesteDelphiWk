@@ -1,0 +1,23 @@
+object DmConexao: TDmConexao
+  Height = 750
+  Width = 1000
+  PixelsPerInch = 120
+  object FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink
+    VendorLib = 'C:\xampp\mysql\bin\libmysql.dll'
+    Left = 336
+    Top = 136
+  end
+  object FDConnection1: TFDConnection
+    Params.Strings = (
+      'Database=teste_delphi'
+      'User_Name=root'
+      'DriverID=MySQL')
+    Left = 224
+    Top = 216
+  end
+  object FDGUIxWaitCursor1: TFDGUIxWaitCursor
+    Provider = 'Forms'
+    Left = 408
+    Top = 216
+  end
+end

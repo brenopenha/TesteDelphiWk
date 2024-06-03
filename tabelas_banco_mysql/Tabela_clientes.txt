@@ -1,0 +1,1 @@
+CREATE TABLE `teste_delphi`.`clientes` (`codigo` INT(8) NOT NULL , `nome` VARCHAR(120) NOT NULL , `cidade` VARCHAR(120) NOT NULL , `uf` VARCHAR(2) NOT NULL , PRIMARY KEY (`codigo`)) ENGINE = InnoDB COMMENT = 'Tabela de clientes';
