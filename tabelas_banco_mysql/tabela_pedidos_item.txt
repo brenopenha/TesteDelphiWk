@@ -1,4 +1,0 @@
-CREATE TABLE `teste_delphi`.`pedidos_item` (`nro_seq` INT(8) NOT NULL AUTO_INCREMENT , `nro_pedido` INT(8) NOT NULL , `cod_produto` INT(8) NOT NULL , `quantidade` INT(8) NOT NULL , `vlr_unitario` DECIMAL(12,2) NOT NULL , `vlr_total` DECIMAL(12,2) NOT NULL , PRIMARY KEY (`nro_seq`, `nro_pedido`)) ENGINE = InnoDB;
-
-ALTER TABLE `pedidos_item` ADD CONSTRAINT `fk_pedidos_item#pedidos` FOREIGN KEY (`nro_pedido`) REFERENCES `pedidos`(`nro_pedido`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-ALTER TABLE `pedidos_item` ADD CONSTRAINT `fk_pedidos_item#produtos` FOREIGN KEY (`cod_produto`) REFERENCES `produtos`(`codigo`) ON DELETE RESTRICT ON UPDATE RESTRICT;
