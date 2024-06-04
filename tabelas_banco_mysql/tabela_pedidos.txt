@@ -1,3 +1,0 @@
-CREATE TABLE `teste_delphi`.`pedidos` (`nro_pedido` INT(8) NOT NULL , `dt_emissao` date NOT NULL , `cod_cliente` INT(8) NOT NULL , `vl_total` DECIMAL(12,2) NOT NULL , PRIMARY KEY (`nro_pedido`)) ENGINE = InnoDB;
-
-ALTER TABLE `pedidos` ADD CONSTRAINT `fk_pedidos#clientes` FOREIGN KEY (`cod_cliente`) REFERENCES `clientes`(`codigo`) ON DELETE RESTRICT ON UPDATE RESTRICT;
