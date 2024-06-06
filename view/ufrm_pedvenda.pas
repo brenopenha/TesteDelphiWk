@@ -491,6 +491,7 @@ begin
          dmconexao.FDPhysMySQLDriverLink1.Vendorlib :=  lib;
        end;
      end;
+     CloseFile(arq);
   end;
 
 end;
