@@ -22,6 +22,8 @@ type
     property VlTotal     : double   read FVlTotal    write FVlTotal;
   end;
 
+  APedidoItem = array of TPedidoItem;
+
 implementation
 
 end.

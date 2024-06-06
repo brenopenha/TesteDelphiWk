@@ -2,7 +2,7 @@ object frm_pedVenda: Tfrm_pedVenda
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
-  Caption = 'Cadastro de Pedido de Venda'
+  Caption = 'Tela de Pedido de Venda'
   ClientHeight = 645
   ClientWidth = 916
   Color = clBtnFace
@@ -25,14 +25,14 @@ object frm_pedVenda: Tfrm_pedVenda
     TabOrder = 3
     ExplicitTop = 586
     ExplicitWidth = 910
-    object btn_sair: TButton
+    object b_sair: TButton
       Left = 790
       Top = 6
       Width = 75
       Height = 25
       Caption = 'Sair'
       TabOrder = 0
-      OnClick = btn_sairClick
+      OnClick = b_sairClick
     end
   end
   object Panel_grid_prod: TPanel
@@ -42,6 +42,8 @@ object frm_pedVenda: Tfrm_pedVenda
     Height = 400
     Align = alClient
     TabOrder = 2
+    ExplicitWidth = 910
+    ExplicitHeight = 391
     object Y: TLabel
       Left = 666
       Top = 356
@@ -63,7 +65,7 @@ object frm_pedVenda: Tfrm_pedVenda
       ParentFont = False
     end
     object sg_produtos: TStringGrid
-      Left = 49
+      Left = 52
       Top = 32
       Width = 816
       Height = 313
@@ -100,6 +102,66 @@ object frm_pedVenda: Tfrm_pedVenda
       TabStop = False
       ReadOnly = True
       TabOrder = 2
+    end
+    object b_MostrarPedido: TButton
+      Left = 55
+      Top = 351
+      Width = 107
+      Height = 25
+      Caption = 'Carregar Pedido'
+      TabOrder = 3
+      OnClick = b_MostrarPedidoClick
+    end
+    object p_cons_pedido: TPanel
+      Left = 240
+      Top = 176
+      Width = 305
+      Height = 81
+      TabOrder = 4
+      Visible = False
+      object Label2: TLabel
+        Left = 35
+        Top = 19
+        Width = 89
+        Height = 17
+        AutoSize = False
+        Caption = 'No. Pedido'
+      end
+      object bConf_Pedido: TButton
+        Left = 136
+        Top = 41
+        Width = 75
+        Height = 25
+        Caption = 'Confirmar'
+        TabOrder = 1
+        OnClick = bConf_PedidoClick
+      end
+      object bCancelar: TButton
+        Left = 217
+        Top = 41
+        Width = 75
+        Height = 25
+        Caption = 'Cancelar'
+        TabOrder = 2
+        OnClick = bCancelarClick
+      end
+      object edit_NroPedido: TEdit
+        Left = 35
+        Top = 42
+        Width = 82
+        Height = 24
+        TabOrder = 0
+        OnKeyPress = edit_cod_produtoKeyPress
+      end
+    end
+    object bExcPedido: TButton
+      Left = 168
+      Top = 352
+      Width = 107
+      Height = 25
+      Caption = 'Excluir Pedido'
+      TabOrder = 5
+      OnClick = bExcPedidoClick
     end
   end
   object Panel_ins_prod: TPanel
@@ -172,6 +234,7 @@ object frm_pedVenda: Tfrm_pedVenda
         ParentFont = False
         TabOrder = 2
         Text = ''
+        OnKeyPress = edit_cod_produtoKeyPress
       end
       object edit_vl_unitario: TLabeledEdit
         Left = 535
@@ -195,6 +258,7 @@ object frm_pedVenda: Tfrm_pedVenda
         ParentFont = False
         TabOrder = 3
         Text = ''
+        OnExit = edit_vl_unitarioExit
       end
       object b_inserir_prod: TButton
         Left = 693
@@ -247,7 +311,7 @@ object frm_pedVenda: Tfrm_pedVenda
     Align = alTop
     TabOrder = 0
     ExplicitWidth = 910
-    object GroupBox1: TGroupBox
+    object GB_Cliente: TGroupBox
       Left = 1
       Top = 1
       Width = 914
@@ -264,7 +328,7 @@ object frm_pedVenda: Tfrm_pedVenda
       ExplicitWidth = 908
       object edit_cod_cli: TLabeledEdit
         Left = 48
-        Top = 44
+        Top = 42
         Width = 98
         Height = 25
         EditLabel.Width = 70

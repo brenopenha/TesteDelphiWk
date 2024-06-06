@@ -43,20 +43,20 @@ INSERT INTO `produtos` (`codigo`, `descricao`, `preco_venda`) VALUES
 (3, 'Cadeira de escritorio', 242.99),
 (4, 'Notebook Samsung', 3200.00),
 (5, 'Caneta bic', 4.30),
-(6, 'Monitor 15 polegadas', 120.00);
+(6, 'Monitor 15 polegadas', 120.00),
 (7, 'Garra termica', 120.00),
 (8, 'Mesa quadrada', 890.00),
 (9, 'Borracha', 8.90),
 (10, 'Caderno 100 folhas', 45.00),
 (11, 'Lapis preto', 4.30),
-(12, 'Estojo', 42.00);
-(13, 'Monitor 17 polegadas', 320.00);
+(12, 'Estojo', 42.00),
+(13, 'Monitor 17 polegadas', 320.00),
 (14, 'Copo termico', 80.00),
 (15, 'Notebook Dell', 3890.00),
 (16, 'Mouse sem fio', 60.00),
 (17, 'Caderno 200 folhas', 55.00),
 (18, 'Bolsa termica', 90.30),
-(19, 'Caneta colorida', 18.00);
+(19, 'Caneta colorida', 18.00),
 (20, 'Lixo de plastico', 38.00);
 
 

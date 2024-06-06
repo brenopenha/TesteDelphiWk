@@ -48,7 +48,7 @@ INSERT INTO `clientes` (`codigo`, `nome`, `cidade`, `uf`) VALUES
 (7, 'Marli Pontes', 'Guarujá', 'SP'),
 (8, 'André Gomes', 'Itu', 'SP'),
 (9, 'Deise Gomes', 'Franca', 'SP'),
-(10, 'Alvaro Silva', 'Ribeirão Preto', 'SP');
+(10, 'Alvaro Silva', 'Ribeirão Preto', 'SP'),
 (11, 'Marilda Alcantara', 'Bauru', 'SP'),
 (12, 'Maria Alice', 'Porto Ferreira', 'SP'),
 (13, 'Simone Costa', 'Americana', 'SP'),

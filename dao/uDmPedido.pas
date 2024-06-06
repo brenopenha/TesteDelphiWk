@@ -12,11 +12,15 @@ type
   TDmPedido = class(TDataModule)
     FDQ_Incluir: TFDQuery;
     FDQ_ProxNroPed: TFDQuery;
+    FDQ_Consultar: TFDQuery;
+    FDQ_Excluir: TFDQuery;
   private
     { Private declarations }
   public
     { Public declarations }
     procedure GravarPedido(oPedido : Tpedido; out sErro : string);
+    procedure ConsultarPedido(oPedido : Tpedido);
+    procedure ExcluirPedido(NroPedido : integer; out sErro : string );
     procedure ProxNroPedido(oPedido : Tpedido);
   end;
 
@@ -30,6 +34,38 @@ implementation
 {$R *.dfm}
 
 { TDmPedido }
+
+procedure TDmPedido.ConsultarPedido(oPedido: Tpedido);
+begin
+  FDQ_Consultar.Close;
+  FDQ_Consultar.Params[0].AsInteger := oPedido.NroPedido;
+  FDQ_Consultar.Open;
+  //
+  if FDQ_Consultar.RecordCount > 0 then
+  begin
+    with oPedido do
+    begin
+      DtEmissao  := FDQ_Consultar.FieldByName('dt_emissao').AsDateTime;
+      CodCliente := FDQ_Consultar.FieldByName('cod_cliente').AsInteger;
+      VlTotal    := FDQ_Consultar.FieldByName('vl_total').AsFloat;
+    end;
+  end
+  else oPedido.NroPedido := -1;
+  FDQ_Consultar.Close;
+end;
+
+procedure TDmPedido.ExcluirPedido(NroPedido: integer; out sErro: string);
+begin
+   FDQ_Excluir.Close;
+   FDQ_Excluir.Params[0].AsInteger := NroPedido;
+   try
+     FDQ_Excluir.ExecSQL;
+   except on E: Exception do
+     begin
+       sErro := 'Erro ao excluir o Pedido no. ' + inttostr(NroPedido) + '. '  + E.Message;
+     end;
+   end;
+end;
 
 procedure TDmPedido.GravarPedido(oPedido: Tpedido; out sErro: string);
 begin

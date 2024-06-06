@@ -15,12 +15,19 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure GravarItemPedido(oPedidoItem :TPedidoItem; out sErro: string);
+    procedure ConsultarItemPedido(var NroPedido: integer; var oAPedidoItem : APedidoItem);
+    procedure ExcluirItensPedido(NroPedido : integer; out sErro : string);
   end;
 
 
 implementation
 
 { TProdutoController }
+
+procedure TPedidoItemController.ConsultarItemPedido(var NroPedido : integer; var oAPedidoItem : APedidoItem);
+begin
+  DmPedidoItem.ConsultarItemPedido(NroPedido, oAPedidoItem);
+end;
 
 constructor TPedidoItemController.Create;
 begin
@@ -31,6 +38,12 @@ destructor TPedidoItemController.Destroy;
 begin
   FreeAndNil(DmPedidoItem);
   inherited;
+end;
+
+procedure TPedidoItemController.ExcluirItensPedido(NroPedido: integer;
+  out sErro: string);
+begin
+  DmPedidoItem.ExcluirItensPedido(NroPedido, sErro);
 end;
 
 procedure TPedidoItemController.GravarItemPedido(oPedidoItem: TpedidoItem; out sErro: string);

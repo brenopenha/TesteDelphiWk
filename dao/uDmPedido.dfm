@@ -8,8 +8,8 @@ object DmPedido: TDmPedido
       
         'insert into pedidos (nro_pedido, dt_emissao, cod_cliente, vl_tot' +
         'al) values (:nro_pedido, :dt_emissao, :cod_cliente, :vl_total)')
-    Left = 160
-    Top = 120
+    Left = 144
+    Top = 56
     ParamData = <
       item
         Name = 'NRO_PEDIDO'
@@ -38,6 +38,35 @@ object DmPedido: TDmPedido
       'select COALESCE(max(nro_pedido)+1,1) as prox_numero'
       'from pedidos')
     Left = 144
+    Top = 312
+  end
+  object FDQ_Consultar: TFDQuery
+    Connection = DmConexao.FDConnection1
+    SQL.Strings = (
+      'select *'
+      'from pedidos'
+      'where nro_pedido = :nro_pedido')
+    Left = 141
+    Top = 142
+    ParamData = <
+      item
+        Name = 'NRO_PEDIDO'
+        DataType = ftInteger
+        ParamType = ptInput
+      end>
+  end
+  object FDQ_Excluir: TFDQuery
+    Connection = DmConexao.FDConnection1
+    SQL.Strings = (
+      'delete from pedidos'
+      'where nro_pedido = :nro_pedido')
+    Left = 144
     Top = 232
+    ParamData = <
+      item
+        Name = 'NRO_PEDIDO'
+        DataType = ftInteger
+        ParamType = ptInput
+      end>
   end
 end

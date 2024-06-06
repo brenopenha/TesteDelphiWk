@@ -11,11 +11,15 @@ uses
 type
   TDmPedidoItem = class(TDataModule)
     FDQ_Incluir: TFDQuery;
+    FDQ_Consultar: TFDQuery;
+    FDQ_Excluir: TFDQuery;
   private
     { Private declarations }
   public
     { Public declarations }
     procedure GravarItemPedido(oPedidoItem : TPedidoItem; out sErro : string);
+    procedure ConsultarItemPedido(var NroPedido: integer; var oAPedidoItem : APedidoItem);
+    procedure ExcluirItensPedido(NroPedido : integer; out sErro : string );
   end;
 
 var
@@ -28,6 +32,53 @@ implementation
 {$R *.dfm}
 
 { TDmPedidoItem }
+
+procedure TDmPedidoItem.ConsultarItemPedido(var NroPedido: integer; var oAPedidoItem : APedidoItem);
+var tam_array    : integer;
+    oPedidoItens : TPedidoItem;
+
+begin
+  FDQ_Consultar.Close;
+  FDQ_Consultar.Params[0].AsInteger := NroPedido;
+  FDQ_Consultar.Open;
+  //
+  tam_array := 0;
+  SetLength(oAPedidoItem, tam_array);
+  if FDQ_Consultar.RecordCount > 0 then
+  begin
+    while not FDQ_Consultar.Eof  do
+    begin
+      with oPedidoItens do
+      begin
+        tam_array := tam_array +1;
+        SetLength(oAPedidoItem, tam_array);
+        oPedidoItens := TPedidoItem.Create;
+        //
+        CodProduto := FDQ_Consultar.FieldByName('cod_produto').AsInteger;
+        Quantidade := FDQ_Consultar.FieldByName('quantidade').AsInteger;
+        VlUnitario := FDQ_Consultar.FieldByName('vlr_unitario').AsFloat;
+        VlTotal    := FDQ_Consultar.FieldByName('vlr_total').AsFloat;
+        oAPedidoItem[tam_array-1] := oPedidoItens;
+      end;
+      FDQ_Consultar.Next;
+    end;
+  end
+  else NroPedido := -1;
+  FDQ_Consultar.Close;
+end;
+
+procedure TDmPedidoItem.ExcluirItensPedido(NroPedido: integer; out sErro : string);
+begin
+   FDQ_Excluir.Close;
+   FDQ_Excluir.Params[0].AsInteger := NroPedido;
+   try
+     FDQ_Excluir.ExecSQL;
+   except on E: Exception do
+     begin
+       sErro := 'Erro ao excluir os Itens do Pedido no. ' + inttostr(NroPedido) + '. '  + E.Message;
+     end;
+   end;
+end;
 
 procedure TDmPedidoItem.GravarItemPedido(oPedidoItem: TPedidoItem;
   out sErro: string);

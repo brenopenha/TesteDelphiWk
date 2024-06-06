@@ -16,6 +16,8 @@ type
     destructor Destroy; override;
     procedure ProxNroPedido(oPedido :TPedido );
     procedure GravarPedido(oPedido :Tpedido; out sErro: string);
+    procedure ConsultarPedido(oPedido :TPedido );
+    procedure ExcluirPedido(NroPedido : integer; out sErro : string);
   end;
 
 
@@ -28,6 +30,11 @@ begin
    DmPedido.ProxNroPedido(oPedido);
 end;
 
+procedure TPedidoController.ConsultarPedido(oPedido: TPedido);
+begin
+  DmPedido.ConsultarPedido(oPedido);
+end;
+
 constructor TPedidoController.Create;
 begin
   DmPedido := TDmPedido.Create(nil);
@@ -37,6 +44,12 @@ destructor TPedidoController.Destroy;
 begin
   FreeAndNil(DmPedido);
   inherited;
+end;
+
+procedure TPedidoController.ExcluirPedido(NroPedido: integer;
+  out sErro: string);
+begin
+  DmPedido.ExcluirPedido(NroPedido, sErro);
 end;
 
 procedure TPedidoController.GravarPedido(oPedido: Tpedido; out sErro: string);
